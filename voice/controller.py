@@ -12,7 +12,6 @@ class VoiceController:
         sample_rate=16000,
         tts_enabled=True,
         tts_rate=180,
-        tts_engine="sapi",
         tts_model_dir=DEFAULT_TTS_MODEL_DIR,
         tts_sid=2,
         tts_num_threads=1,
@@ -34,7 +33,6 @@ class VoiceController:
         self.speaker = SpeechSpeaker(
             enabled=tts_enabled,
             rate=tts_rate,
-            engine=tts_engine,
             model_dir=tts_model_dir,
             sid=tts_sid,
             num_threads=tts_num_threads,

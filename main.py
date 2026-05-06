@@ -115,7 +115,6 @@ class SmartCareMainApp:
         self.speaker = SpeechSpeaker(
             enabled=not args.no_tts,
             rate=args.tts_rate,
-            engine=args.tts_engine,
             model_dir=args.tts_model_dir,
             sid=args.tts_sid,
             num_threads=args.tts_num_threads,
@@ -655,7 +654,6 @@ def build_parser():
     parser.add_argument("--debug-audio", action="store_true")
     parser.add_argument("--no-tts", action="store_true")
     parser.add_argument("--tts-rate", type=int, default=180)
-    parser.add_argument("--tts-engine", choices=("sherpa", "sapi", "pyttsx3"), default="sherpa")
     parser.add_argument("--tts-model-dir", default=str(DEFAULT_TTS_MODEL_DIR))
     parser.add_argument("--tts-sid", type=int, default=2)
     parser.add_argument("--tts-num-threads", type=int, default=1)

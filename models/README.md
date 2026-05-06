@@ -5,7 +5,7 @@ Place local model files that should not be committed here.
 Expected voice ASR layout:
 
 ```text
-smart_care/models/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-int8-2025-09-09/
+models/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-int8-2025-09-09/
 ```
 
 The sherpa-onnx SenseVoice directory should contain `model.int8.onnx` and
@@ -15,7 +15,7 @@ if the model lives elsewhere.
 Expected voice TTS layout:
 
 ```text
-smart_care/models/sherpa-onnx-vits-zh-ll/
+models/sherpa-onnx-vits-zh-ll/
 ```
 
 The sherpa-onnx VITS directory should contain `model.onnx`, `lexicon.txt`,

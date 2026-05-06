@@ -14,44 +14,44 @@ SmartCare is a local vision perception system for home/elderly care scenarios. I
 All commands assume running from the repository root with the conda environment `torch-learn`:
 
 ```powershell
-cd E:\SSQ\Sophomore\zqzb\rgzndl
+cd E:\SSQ\Sophomore\zqzb\rgzndl\smart_care
 ```
 
 ### Main Application Entry Points
 
 ```powershell
 # Integrated main program (loads all models, voice control, fall monitoring)
-conda run --live-stream --name torch-learn python smart_care/main.py
+conda run --live-stream --name torch-learn python main.py
 
 # Quick test with lightweight OpenCV VL backend
-conda run --live-stream --name torch-learn python smart_care/main.py --vl-backend opencv
+conda run --live-stream --name torch-learn python main.py --vl-backend opencv
 
 # Push-to-talk voice mode instead of continuous listening
-conda run --live-stream --name torch-learn python smart_care/main.py --push-to-talk
+conda run --live-stream --name torch-learn python main.py --push-to-talk
 ```
 
 ### Individual Module Entry Points
 
 ```powershell
 # Visual Language: describe scene or find objects by text
-conda run --live-stream --name torch-learn python smart_care/main_vl.py describe --camera
-conda run --live-stream --name torch-learn python smart_care/main_vl.py find "蓝色瓶子" --camera --backend qwen
+conda run --live-stream --name torch-learn python main_vl.py describe --camera
+conda run --live-stream --name torch-learn python main_vl.py find "蓝色瓶子" --camera --backend qwen
 
 # Object detection with depth positioning
-conda run --live-stream --name torch-learn python smart_care/main_object_locator.py
+conda run --live-stream --name torch-learn python main_object_locator.py
 
 # Personal object training pipeline
-conda run --live-stream --name torch-learn python smart_care/main_object_trainer.py white_cup --display-name 白色杯子
+conda run --live-stream --name torch-learn python main_object_trainer.py white_cup --display-name 白色杯子
 
 # Face recognition
-conda run --live-stream --name torch-learn python smart_care/main_face.py enroll --person-name zhangsan --display-name 张三 --samples 20
-conda run --live-stream --name torch-learn python smart_care/main_face.py recognize
+conda run --live-stream --name torch-learn python main_face.py enroll --person-name zhangsan --display-name 张三 --samples 20
+conda run --live-stream --name torch-learn python main_face.py recognize
 
 # Fall detection (static/dynamic/multimodal)
-conda run --live-stream --name torch-learn python smart_care/main_fall.py multimodal
+conda run --live-stream --name torch-learn python main_fall.py multimodal
 
 # Voice control only
-conda run --live-stream --name torch-learn python smart_care/main_voice.py
+conda run --live-stream --name torch-learn python main_voice.py
 ```
 
 ### Rebuilding C++ Camera Module
@@ -59,7 +59,7 @@ conda run --live-stream --name torch-learn python smart_care/main_voice.py
 If the Orbbec C++ camera module is missing or needs rebuilding:
 
 ```powershell
-conda run --live-stream --name torch-learn python smart_care/camera/setup_orbbec_cpp.py build_ext --inplace
+conda run --live-stream --name torch-learn python camera/setup_orbbec_cpp.py build_ext --inplace
 ```
 
 ## High-Level Architecture
@@ -77,10 +77,10 @@ smart_care/
 ├── object/                # Object detection, personal item training, SQLite memory
 ├── face/                  # InsightFace/ArcFace recognition and face database
 ├── fall/                  # Static ONNX, dynamic XGBoost, multimodal fusion
-├── voice/                 # Vosk ASR, pyttsx3 TTS, command parser, controller
+├── voice/                 # sherpa-onnx ASR/TTS, command parser, controller
 ├── data/                  # COCO Chinese name map, object_memory.db
 ├── personal_objects/      # Personal object datasets and trained weights
-└── models/                # Vosk ASR model directory (vosk-model-small-cn-0.22)
+└── models/                # Local sherpa-onnx ASR/TTS model directories
 ```
 
 ### Key Integration Patterns
@@ -120,7 +120,7 @@ Several modules have hardcoded absolute paths that must be adjusted for the loca
 - `config.py`: `VL_MODEL_PATH`, `VL_FALLBACK_MODEL_PATH`
 - `object/locator.py`: `ORBBEC_SDK_DIR` (Python SDK path for legacy loader)
 - `fall/multimodal.py`: `STATIC_MODEL_PATH`, `POSE_MODEL_PATH`, `DYNAMIC_MODEL_PATH`, `VIDEO_PATH`
-- `voice/asr.py`: `DEFAULT_MODEL_DIR` (defaults to `models/vosk-model-small-cn-0.22`)
+- `voice/sherpa_asr.py`: `DEFAULT_MODEL_DIR` (defaults to the SenseVoice model under `models/`)
 
 ### Threading and Resource Management
 

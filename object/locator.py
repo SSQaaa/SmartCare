@@ -667,7 +667,7 @@ def load_orbbec_cpp_camera():
     except ImportError as exc:
         raise RuntimeError(
             "Cannot import orbbec_cpp_camera. Build it first with: "
-            "python smart_care/camera/setup_orbbec_cpp.py build_ext --inplace"
+            "python camera/setup_orbbec_cpp.py build_ext --inplace"
         ) from exc
 
     return OrbbecCppCamera
@@ -905,4 +905,4 @@ if __name__ == "__main__":
         print("Run failed:", e)
         if USE_DEPTH_CAMERA:
             print("Depth mode uses the Orbbec C++ pybind module.")
-            print("Build it with: python smart_care/camera/setup_orbbec_cpp.py build_ext --inplace")
+            print("Build it with: python camera/setup_orbbec_cpp.py build_ext --inplace")

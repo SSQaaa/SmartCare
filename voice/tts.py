@@ -1,6 +1,4 @@
 import queue
-import subprocess
-import sys
 import tempfile
 import threading
 import wave
@@ -18,7 +16,6 @@ class SpeechSpeaker:
         enabled=True,
         rate=180,
         async_mode=False,
-        engine="sherpa",
         model_dir=DEFAULT_TTS_MODEL_DIR,
         sid=2,
         num_threads=1,
@@ -28,7 +25,6 @@ class SpeechSpeaker:
         self.enabled = bool(enabled)
         self.rate = int(rate)
         self.async_mode = bool(async_mode)
-        self.engine = str(engine or "sherpa").lower()
         self.model_dir = Path(model_dir)
         self.sid = int(sid)
         self.num_threads = int(num_threads)
@@ -36,7 +32,6 @@ class SpeechSpeaker:
         self.tail_silence_ms = max(0, int(tail_silence_ms))
         self._queue = queue.Queue()
         self._thread = None
-        self._engine = None
         self._sherpa_tts = None
         self._closed = False
         self._lock = threading.Lock()
@@ -44,26 +39,8 @@ class SpeechSpeaker:
         if self.enabled:
             if self.async_mode:
                 self._start_worker()
-            elif self.engine == "sherpa":
+            else:
                 self._init_sherpa_tts()
-            elif self.engine == "pyttsx3":
-                self._init_engine()
-
-    def _init_engine(self):
-        if self._engine is not None:
-            return
-        try:
-            import pyttsx3
-        except ImportError:
-            if self.engine == "pyttsx3":
-                print("缺少 pyttsx3，无法使用 pyttsx3 播报。可安装：python -m pip install pyttsx3")
-            return
-        try:
-            self._engine = pyttsx3.init()
-            self._engine.setProperty("rate", self.rate)
-        except Exception as exc:
-            print(f"pyttsx3 初始化失败，将使用系统语音兜底：{exc}")
-            self._engine = None
 
     def _init_sherpa_tts(self):
         if self._sherpa_tts is not None:
@@ -117,10 +94,7 @@ class SpeechSpeaker:
         self._thread.start()
 
     def _run(self):
-        if self.engine == "sherpa":
-            self._init_sherpa_tts()
-        elif self.engine == "pyttsx3":
-            self._init_engine()
+        self._init_sherpa_tts()
         while not self._closed:
             text = self._queue.get()
             if text is None:
@@ -157,99 +131,30 @@ class SpeechSpeaker:
         except Exception:
             pass
 
-        if sys.platform == "win32":
-            try:
-                import winsound
-
-                winsound.PlaySound(str(path), winsound.SND_FILENAME)
-                return True
-            except Exception as exc:
-                print(f"播放 wav 失败：{exc}")
-        return False
-
-    def _speak_with_sherpa(self, text):
-        if not self._init_sherpa_tts():
-            return False
         try:
-            speed = max(0.5, min(2.0, self.rate / 180.0))
-            audio = self._sherpa_tts.generate(text, sid=self.sid, speed=speed)
-            if len(audio.samples) == 0:
-                print("sherpa VITS 没有生成音频。")
-                return False
-            temp_path = Path(tempfile.gettempdir()) / "smartcare_sherpa_tts.wav"
-            self._write_wav(temp_path, audio.samples, audio.sample_rate)
-            return self._play_wav(temp_path)
-        except Exception as exc:
-            print(f"sherpa VITS 播报失败：{exc}")
-            return False
+            import winsound
 
-    def _speak_with_system_speech(self, text):
-        if sys.platform != "win32":
-            return False
-        voice_rate = max(-10, min(10, int((self.rate - 180) / 20)))
-        temp_path = None
-        try:
-            with tempfile.NamedTemporaryFile("w", encoding="utf-8", suffix=".txt", delete=False) as handle:
-                handle.write(text)
-                temp_path = Path(handle.name)
-            safe_path = str(temp_path).replace("'", "''")
-            script = (
-                f"$text = Get-Content -LiteralPath '{safe_path}' -Raw -Encoding UTF8; "
-                "try { "
-                "$v = New-Object -ComObject SAPI.SpVoice; "
-                f"$v.Rate = {voice_rate}; "
-                "$v.Volume = 100; "
-                "[void]$v.Speak($text); "
-                "} catch { "
-                "Add-Type -AssemblyName System.Speech; "
-                "$s = New-Object System.Speech.Synthesis.SpeechSynthesizer; "
-                f"$s.Rate = {voice_rate}; "
-                "$s.Volume = 100; "
-                "$s.Speak($text); "
-                "}"
-            )
-            completed = subprocess.run(
-                ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.PIPE,
-                text=True,
-                check=False,
-            )
-            if completed.returncode == 0:
-                return True
-            if completed.stderr:
-                print(f"Windows 系统语音返回错误：{completed.stderr.strip()}")
-            return False
+            winsound.PlaySound(str(path), winsound.SND_FILENAME)
+            return True
         except Exception as exc:
-            print(f"Windows 系统语音兜底失败：{exc}")
+            print(f"播放 wav 失败：{exc}")
             return False
-        finally:
-            if temp_path is not None:
-                temp_path.unlink(missing_ok=True)
 
     def _speak_now(self, text):
         with self._lock:
-            if self.engine == "sherpa" and self._speak_with_sherpa(text):
+            if not self._init_sherpa_tts():
                 return
-            if self._engine is not None:
-                try:
-                    self._engine.say(text)
-                    self._engine.runAndWait()
+            try:
+                speed = max(0.5, min(2.0, self.rate / 180.0))
+                audio = self._sherpa_tts.generate(text, sid=self.sid, speed=speed)
+                if len(audio.samples) == 0:
+                    print("sherpa VITS 没有生成音频。")
                     return
-                except Exception as exc:
-                    print(f"pyttsx3 播报失败，将使用系统语音兜底：{exc}")
-            if self._speak_with_system_speech(text):
-                return
-            if self.engine != "pyttsx3":
-                self._init_engine()
-                if self._engine is not None:
-                    try:
-                        self._engine.say(text)
-                        self._engine.runAndWait()
-                        return
-                    except Exception as exc:
-                        print(f"pyttsx3 兜底播报失败：{exc}")
-            print("语音引擎不可用，只能显示文字。安装：python -m pip install pyttsx3，并确认 Windows 音量和输出设备。")
+                temp_path = Path(tempfile.gettempdir()) / "smartcare_sherpa_tts.wav"
+                self._write_wav(temp_path, audio.samples, audio.sample_rate)
+                self._play_wav(temp_path)
+            except Exception as exc:
+                print(f"sherpa VITS 播报失败：{exc}")
 
     def speak(self, text):
         text = str(text or "").strip()

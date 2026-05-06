@@ -17,7 +17,6 @@ def build_parser():
     parser.add_argument("--debug-audio", action="store_true", help="Print microphone volume diagnostics after each recording.")
     parser.add_argument("--no-tts", action="store_true")
     parser.add_argument("--tts-rate", type=int, default=180)
-    parser.add_argument("--tts-engine", choices=("sherpa", "sapi", "pyttsx3"), default="sherpa")
     parser.add_argument("--tts-model-dir", default=str(DEFAULT_TTS_MODEL_DIR), help="sherpa-onnx VITS model directory.")
     parser.add_argument("--tts-sid", type=int, default=2, help="sherpa VITS speaker id.")
     parser.add_argument("--tts-num-threads", type=int, default=1)
@@ -47,7 +46,6 @@ def main():
         debug_audio=args.debug_audio,
         tts_enabled=not args.no_tts,
         tts_rate=args.tts_rate,
-        tts_engine=args.tts_engine,
         tts_model_dir=args.tts_model_dir,
         tts_sid=args.tts_sid,
         tts_num_threads=args.tts_num_threads,

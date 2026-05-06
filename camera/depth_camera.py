@@ -32,7 +32,7 @@ def load_orbbec_cpp_camera():
     except ImportError as exc:
         raise DepthCameraUnavailable(
             "Orbbec depth camera module is not available. "
-            "Build it first with: python smart_care/camera/setup_orbbec_cpp.py build_ext --inplace"
+            "Build it first with: python camera/setup_orbbec_cpp.py build_ext --inplace"
         ) from exc
     return OrbbecCppCamera
 
