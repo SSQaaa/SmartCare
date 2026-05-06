@@ -32,6 +32,17 @@ def init_db(db_path: Path = DB_PATH):
             )
             """
         )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS personal_object_aliases (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                object_name TEXT NOT NULL,
+                alias TEXT NOT NULL UNIQUE,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+            """
+        )
         conn.commit()
     finally:
         conn.close()
@@ -65,6 +76,27 @@ def upsert_object(
                 updated_at=CURRENT_TIMESTAMP
             """,
             (object_name, display_name, video_path, dataset_dir, data_yaml, weights_path, status),
+        )
+        if display_name:
+            conn.execute(
+                """
+                INSERT INTO personal_object_aliases (object_name, alias, updated_at)
+                VALUES (?, ?, CURRENT_TIMESTAMP)
+                ON CONFLICT(alias) DO UPDATE SET
+                    object_name=excluded.object_name,
+                    updated_at=CURRENT_TIMESTAMP
+                """,
+                (object_name, display_name),
+            )
+        conn.execute(
+            """
+            INSERT INTO personal_object_aliases (object_name, alias, updated_at)
+            VALUES (?, ?, CURRENT_TIMESTAMP)
+            ON CONFLICT(alias) DO UPDATE SET
+                object_name=excluded.object_name,
+                updated_at=CURRENT_TIMESTAMP
+            """,
+            (object_name, object_name),
         )
         conn.commit()
     finally:
@@ -139,5 +171,21 @@ def get_object(object_name: str, db_path: Path = DB_PATH) -> Optional[sqlite3.Ro
             (object_name,),
         ).fetchone()
         return row
+    finally:
+        conn.close()
+
+
+def get_object_aliases(db_path: Path = DB_PATH) -> dict[str, str]:
+    init_db(db_path)
+    conn = get_connection(db_path)
+    try:
+        rows = conn.execute(
+            """
+            SELECT alias, object_name
+            FROM personal_object_aliases
+            ORDER BY updated_at DESC
+            """
+        ).fetchall()
+        return {row["alias"]: row["object_name"] for row in rows}
     finally:
         conn.close()

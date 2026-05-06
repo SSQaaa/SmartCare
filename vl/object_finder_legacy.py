@@ -630,9 +630,9 @@ def build_vl_depth_result(
     depth_m = depth_mm / 1000.0 if depth_mm is not None else None
 
     if depth_m is None:
-        description = f"{query.target_name}可能在你{direction}，但深度数据不稳定"
+        description = f"{query.target_name}可能在我{direction}，但深度数据不稳定"
     else:
-        description = f"{query.target_name}可能在你{direction}，距离摄像头约{depth_m:.2f}米"
+        description = f"{query.target_name}可能在我{direction}，距离我约{depth_m:.2f}米"
 
     return VLDepthResult(
         target_name=query.target_name,

@@ -25,6 +25,7 @@ DET_SIZE = (256, 256)
 RECOGNIZE_EVERY_N_FRAMES = 5
 CAMERA_WIDTH = 640
 CAMERA_HEIGHT = 480
+MAX_EMPTY_FRAME_READS = 30
 
 
 def normalize_person_name(name):
@@ -185,12 +186,25 @@ def collect_samples(person_name, display_name, camera_index, sample_count, inter
 
     saved = 0
     frame_idx = 0
+    empty_reads = 0
     print("Only frames with exactly one face will be saved. Press S to save, Q/ESC to finish.")
     try:
         while saved < sample_count:
             ok, frame = cap.read()
             if not ok:
-                break
+                empty_reads += 1
+                if empty_reads == 1:
+                    print("Waiting for camera frames...")
+                if empty_reads >= MAX_EMPTY_FRAME_READS:
+                    raise RuntimeError(
+                        "No frames were received from the Orbbec camera. "
+                        "Please check the USB cable, camera permissions, and whether another program is using it."
+                    )
+                key = cv2.waitKey(100) & 0xFF
+                if key in (Q_KEY, ESC):
+                    break
+                continue
+            empty_reads = 0
 
             faces = detect_faces(app, frame)
             single_face = faces[0] if len(faces) == 1 else None
@@ -362,11 +376,24 @@ def recognize(source, camera_index, model_path, threshold, det_size, process_eve
 
     frame_idx = 0
     last_draw_results = []
+    empty_reads = 0
     try:
         while True:
             ok, frame = cap.read()
             if not ok:
-                break
+                empty_reads += 1
+                if empty_reads == 1:
+                    print("Waiting for camera frames...")
+                if empty_reads >= MAX_EMPTY_FRAME_READS:
+                    raise RuntimeError(
+                        "No frames were received from the camera. "
+                        "Please check the input source, USB cable, camera permissions, and whether another program is using it."
+                    )
+                key = cv2.waitKey(100) & 0xFF
+                if key in (Q_KEY, ESC):
+                    break
+                continue
+            empty_reads = 0
 
             if frame_idx % max(1, process_every) == 0:
                 faces = detect_faces(app, frame)

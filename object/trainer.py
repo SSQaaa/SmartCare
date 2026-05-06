@@ -959,7 +959,9 @@ def main():
     if not raw_name:
         raise RuntimeError("Object name is required.")
     object_name = normalize_object_name(raw_name)
-    display_name = args.display_name.strip() or raw_name
+    display_name = args.display_name.strip()
+    if not display_name:
+        display_name = input("Enter display object name / 请输入物品显示名: ").strip() or raw_name
 
     if args.video:
         video_path = Path(args.video).resolve()

@@ -51,7 +51,7 @@ from utils.torch_utils import select_device
 
 IMG_SIZE = (640, 640)
 COCO_CONF_THRES = 0.60
-PERSONAL_CONF_THRES = 0.30
+PERSONAL_CONF_THRES = 0.40
 IOU_THRES = 0.45
 MAX_DET = 30
 DEVICE = ""
@@ -466,12 +466,12 @@ def build_object_sentence(det, image_shape):
     if USE_DEPTH_CAMERA and det["depth_mm"] is not None:
         depth_m = det["depth_mm"] / 1000.0
         if det["relation_text"]:
-            return f"{class_name}{det['relation_text']}，在你{direction}，距离摄像头约{depth_m:.2f}米"
-        return f"{class_name}在你{direction}，距离摄像头约{depth_m:.2f}米"
+            return f"{class_name}{det['relation_text']}，在我{direction}，距离我约{depth_m:.2f}米"
+        return f"{class_name}在我{direction}，距离我约{depth_m:.2f}米"
 
     if det["relation_text"]:
-        return f"{class_name}{det['relation_text']}，在你{direction}"
-    return f"{class_name}在你{direction}"
+        return f"{class_name}{det['relation_text']}，在我{direction}"
+    return f"{class_name}在我{direction}"
 
 
 def draw_detection(frame, det):

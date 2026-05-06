@@ -29,7 +29,9 @@ def main():
     args = parser.parse_args()
 
     object_name = normalize_object_name(args.name)
-    display_name = args.display_name.strip() or args.name
+    display_name = args.display_name.strip()
+    if not display_name:
+        display_name = input("请输入物品显示名 display object name，例如：白色杯子：").strip() or args.name
     if args.train_only:
         train_existing_dataset(
             object_name=object_name,

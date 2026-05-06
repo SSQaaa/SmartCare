@@ -17,8 +17,6 @@ DT = 1.0 / FPS
 OUT_DIR.mkdir(exist_ok=True)
 # ----------------------------------------
 
-model = YOLO(POSE_MODEL)
-
 # ----------------- Le2i 解析 -----------------
 def read_le2i_gt(gt_path):
     """读取 Le2i 标注，返回 fall_start, fall_end, per-frame bbox"""
