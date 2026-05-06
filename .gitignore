@@ -2,3 +2,8 @@
 models/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-int8-2025-09-09/model.int8.onnx
 models/sherpa-onnx-vits-zh-ll/model.onnx
 
+# Local private enrollment data
+personal_objects/
+face/faces/
+face/face_model.npz
+data/object_memory.db
