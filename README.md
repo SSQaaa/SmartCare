@@ -268,7 +268,7 @@ conda run --live-stream --name torch-learn python main.py --input-device 2 --deb
 录入并自动训练：
 
 ```powershell
-conda run --live-stream --name torch-learn python main_face.py enroll --person-name zhangsan --display-name 张三 --samples 20
+python main_face.py enroll --person-name zhangsan --display-name 张三 --samples 20
 ```
 
 参数含义：
@@ -288,19 +288,19 @@ conda run --live-stream --name torch-learn python main_face.py enroll --person-n
 只采集样本：
 
 ```powershell
-conda run --live-stream --name torch-learn python main_face.py collect --person-name zhangsan --display-name 张三 --samples 20
+python main_face.py collect --person-name zhangsan --display-name 张三 --samples 20
 ```
 
 只训练已有样本：
 
 ```powershell
-conda run --live-stream --name torch-learn python main_face.py train
+python main_face.py train
 ```
 
 单独运行实时人脸识别：
 
 ```powershell
-conda run --live-stream --name torch-learn python main_face.py recognize
+python main_face.py recognize
 ```
 
 ## 注册个人物品
@@ -315,7 +315,7 @@ conda run --live-stream --name torch-learn python main_face.py recognize
 示例：
 
 ```powershell
-conda run --live-stream --name torch-learn python main_object_trainer.py my_mouse --display-name 我的鼠标
+python main_object_trainer.py my_mouse --display-name 我的鼠标
 ```
 
 流程大致是：
@@ -330,13 +330,13 @@ conda run --live-stream --name torch-learn python main_object_trainer.py my_mous
 如果已经有视频：
 
 ```powershell
-conda run --live-stream --name torch-learn python main_object_trainer.py my_mouse --display-name 我的鼠标 --video E:\path\to\object.mp4
+python main_object_trainer.py my_mouse --display-name 我的鼠标 --video E:\path\to\object.mp4
 ```
 
 如果数据集已经做好，只重新训练：
 
 ```powershell
-conda run --live-stream --name torch-learn python main_object_trainer.py my_mouse --display-name 我的鼠标 --train-only
+python main_object_trainer.py my_mouse --display-name 我的鼠标 --train-only
 ```
 
 训练完成后，你就可以在主程序里说：
@@ -356,25 +356,25 @@ conda run --live-stream --name torch-learn python main_object_trainer.py my_mous
 描述图片：
 
 ```powershell
-conda run --live-stream --name torch-learn python main_vl.py describe --image data/test.png
+python main_vl.py describe --image data/test.png
 ```
 
 用相机描述画面：
 
 ```powershell
-conda run --live-stream --name torch-learn python main_vl.py describe --camera --interval 3
+python main_vl.py describe --camera --interval 3
 ```
 
 用相机找物：
 
 ```powershell
-conda run --live-stream --name torch-learn python main_vl.py find "蓝色瓶子" --camera --backend qwen --interval 3
+python main_vl.py find "蓝色瓶子" --camera --backend qwen --interval 3
 ```
 
 ### 物体定位
 
 ```powershell
-conda run --live-stream --name torch-learn python main_object_locator.py
+python main_object_locator.py
 ```
 
 窗口中：
@@ -387,19 +387,19 @@ conda run --live-stream --name torch-learn python main_object_locator.py
 单独运行静态检测：
 
 ```powershell
-conda run --live-stream --name torch-learn python main_fall.py static
+python main_fall.py static
 ```
 
 单独运行动态检测：
 
 ```powershell
-conda run --live-stream --name torch-learn python main_fall.py dynamic
+python main_fall.py dynamic
 ```
 
 单独运行多模态检测：
 
 ```powershell
-conda run --live-stream --name torch-learn python main_fall.py multimodal
+python main_fall.py multimodal
 ```
 
 日常使用不需要单独启动这些，`main.py` 已经持续运行跌倒检测。
@@ -469,7 +469,7 @@ conda run --live-stream --name torch-learn python main_voice.py --list-audio-dev
 然后指定设备并开启诊断：
 
 ```powershell
-conda run --live-stream --name torch-learn python main.py --input-device 2 --debug-audio
+python main.py --input-device 2 --debug-audio
 ```
 
 说话时尽量：
@@ -494,7 +494,7 @@ tail_silence_ms=350
 先测试：
 
 ```powershell
-conda run --live-stream --name torch-learn python main_voice.py --test-tts
+python main_voice.py --test-tts
 ```
 
 确认：
