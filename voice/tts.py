@@ -96,10 +96,14 @@ class SpeechSpeaker:
     def _run(self):
         self._init_sherpa_tts()
         while not self._closed:
-            text = self._queue.get()
-            if text is None:
+            item = self._queue.get()
+            if item is None:
                 break
-            self._speak_now(text)
+            if isinstance(item, tuple) and item and item[0] == "recording":
+                _, text, recording_path, cache_path = item
+                self._speak_recording_now(text, recording_path, cache_path)
+            else:
+                self._speak_now(item)
 
     def _write_wav(self, path, samples, sample_rate):
         samples = np.asarray(samples, dtype=np.float32)
@@ -140,21 +144,28 @@ class SpeechSpeaker:
             print(f"播放 wav 失败：{exc}")
             return False
 
+    def _generate_wav(self, text, path):
+        if not self._init_sherpa_tts():
+            return False
+        try:
+            speed = max(0.5, min(2.0, self.rate / 180.0))
+            audio = self._sherpa_tts.generate(text, sid=self.sid, speed=speed)
+            if len(audio.samples) == 0:
+                print("sherpa VITS 没有生成音频。")
+                return False
+            path = Path(path)
+            path.parent.mkdir(parents=True, exist_ok=True)
+            self._write_wav(path, audio.samples, audio.sample_rate)
+            return True
+        except Exception as exc:
+            print(f"sherpa VITS 生成缓存音频失败：{exc}")
+            return False
+
     def _speak_now(self, text):
         with self._lock:
-            if not self._init_sherpa_tts():
-                return
-            try:
-                speed = max(0.5, min(2.0, self.rate / 180.0))
-                audio = self._sherpa_tts.generate(text, sid=self.sid, speed=speed)
-                if len(audio.samples) == 0:
-                    print("sherpa VITS 没有生成音频。")
-                    return
-                temp_path = Path(tempfile.gettempdir()) / "smartcare_sherpa_tts.wav"
-                self._write_wav(temp_path, audio.samples, audio.sample_rate)
+            temp_path = Path(tempfile.gettempdir()) / "smartcare_sherpa_tts.wav"
+            if self._generate_wav(text, temp_path):
                 self._play_wav(temp_path)
-            except Exception as exc:
-                print(f"sherpa VITS 播报失败：{exc}")
 
     def speak(self, text):
         text = str(text or "").strip()
@@ -167,6 +178,30 @@ class SpeechSpeaker:
             self._queue.put(text)
         else:
             self._speak_now(text)
+
+    def _speak_recording_now(self, text, recording_path=None, cache_path=None):
+        for path in (recording_path, cache_path):
+            if path and Path(path).exists() and self._play_wav(path):
+                return
+
+        if cache_path:
+            with self._lock:
+                if self._generate_wav(text, cache_path) and self._play_wav(cache_path):
+                    return
+
+        self._speak_now(text)
+
+    def speak_recording(self, text, recording_path=None, cache_path=None):
+        text = str(text or "").strip()
+        if not text:
+            return
+        print(f"[语音播报] {text}")
+        if not self.enabled:
+            return
+        if self.async_mode and self._thread is not None:
+            self._queue.put(("recording", text, recording_path, cache_path))
+        else:
+            self._speak_recording_now(text, recording_path, cache_path)
 
     def close(self):
         self._closed = True

@@ -20,9 +20,9 @@ PROJECT_ROOT = SMART_CARE_ROOT.parent
 YOLOV5_DIR = PROJECT_ROOT / "yolov5"
 PERSONAL_ROOT = SMART_CARE_ROOT / "personal_objects"
 
-START_KEY = ord("s")
-END_KEY = ord("e")
-QUIT_KEY = ord("q")
+START_KEYS = {ord("s"), ord("S")}
+END_KEYS = {ord("e"), ord("E")}
+QUIT_KEYS = {ord("q"), ord("Q")}
 
 MIN_MANUAL_KEYFRAMES = 5
 MAX_MANUAL_KEYFRAMES = 20
@@ -200,25 +200,37 @@ def record_object_video(object_name, camera_index):
     writer = None
     recording = False
     started_at = 0.0
+    missed_frames = 0
+    max_missed_frames = 100
 
     print("Please place the object near the center, press S to start, E to stop.")
+    cv2.namedWindow("Record Object", cv2.WINDOW_NORMAL)
     while True:
         ok, frame = cap.read()
         if not ok:
-            break
+            missed_frames += 1
+            if missed_frames == 1:
+                print("Waiting for camera frames...")
+            if missed_frames >= max_missed_frames:
+                break
+            cv2.waitKey(30)
+            continue
+        missed_frames = 0
 
         elapsed = time.time() - started_at if recording else 0.0
         preview = draw_record_ui(frame, object_name, recording, elapsed)
         cv2.imshow("Record Object", preview)
         key = cv2.waitKey(1) & 0xFF
 
-        if key == START_KEY and not recording:
+        if key in START_KEYS and not recording:
             writer = get_video_writer(video_path, frame, fps)
             recording = True
             started_at = time.time()
-        elif key == END_KEY and recording:
+            print(f"Recording started: {video_path}")
+        elif key in END_KEYS and recording:
+            print("Recording stopped.")
             break
-        elif key == QUIT_KEY:
+        elif key in QUIT_KEYS:
             if writer is not None:
                 writer.release()
             cap.release()

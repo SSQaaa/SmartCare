@@ -66,9 +66,8 @@ class DepthColorCamera:
         if frame_set is None or "color" not in frame_set:
             return False, None
         frame = frame_set["color"]
-        color_format = str(self.info.get("color_format", "")).upper() if isinstance(self.info, dict) else ""
-        if color_format == "RGB":
-            frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+        # OrbbecCppCamera.color_frame_to_bgr() already returns OpenCV-ready BGR
+        # frames, even when the hardware stream profile reports RGB.
         return True, frame
 
     def release(self):

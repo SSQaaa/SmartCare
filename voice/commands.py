@@ -13,10 +13,17 @@ HELP_TEXT = "你可以说：看看周围、帮我找杯子、这是谁、这是�
 SAFETY_CONFIRM_WORDS = (
     "没事",
     "我没事",
+    "没有事",
+    "我没有事",
+    "没事儿",
+    "我没事儿",
     "没关系",
     "我没关系",
     "我还好",
     "还好",
+    "还行",
+    "挺好",
+    "可以",
     "没问题",
     "不用担心",
     "安全",
@@ -25,7 +32,9 @@ SAFETY_CONFIRM_WORDS = (
 
 
 def compact_text(text):
-    return "".join(str(text or "").strip().lower().split())
+    punctuation = "，。！？；：、,.!?;:（）()[]【】“”\"' "
+    compact = "".join(str(text or "").strip().lower().split())
+    return "".join(ch for ch in compact if ch not in punctuation)
 
 
 def normalize_command_text(text):
